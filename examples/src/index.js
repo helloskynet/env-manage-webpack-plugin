@@ -3,7 +3,7 @@ console.log("hello world");
 document.getElementsByTagName("body")[0].innerHTML = "环境启动成功！";
 
 (function () {
-  setInterval(() => {
+  const timer = () => {
     fetch("/simple")
       .then((res) => {
         return res.json();
@@ -27,5 +27,7 @@ document.getElementsByTagName("body")[0].innerHTML = "环境启动成功！";
       .catch(() => {
         document.getElementsByTagName("body")[0].innerHTML += "error /two <br>";
       });
-  }, 5000);
+  };
+  setInterval(timer, 5000);
+  timer();
 })();

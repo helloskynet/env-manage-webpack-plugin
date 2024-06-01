@@ -88,11 +88,11 @@
       </caption>
       <thead>
         <tr>
-          <th class="btbg font-center titfont">环境名称</th>
-          <th class="btbg font-center titfont">环境地址</th>
-          <th class="btbg font-center titfont">首页地址</th>
-          <th class="btbg font-center titfont">状态</th>
-          <th class="btbg font-center titfont">操作</th>
+          <th class="btbg font-center titfont">环境名称(name)</th>
+          <th class="btbg font-center titfont">环境代理详情（proxies）</th>
+          <th class="btbg font-center titfont">首页地址（index）</th>
+          <th class="btbg font-center titfont">状态(status)</th>
+          <th class="btbg font-center titfont">操作(op)</th>
         </tr>
       </thead>
       <tbody id="tableContent"></tbody>
@@ -100,12 +100,14 @@
   </body>
   <script>
     let localEnvList = [];
+
+    const apiPrefix = location.href;
     /**
      * 获取环境列表
      *
      */
     const getEnvList = () => {
-      fetch("/webpack-env-manage/api/getlist")
+      fetch(`${apiPrefix}/api/getlist`)
         .then((res) => {
           return res.json();
         })
@@ -120,29 +122,34 @@
      * */
     const updateEnvListHTML = (envList) => {
       const newHtml = envList.map((item) => {
-        let envListHTML = `** --->${item.targetIp}<br/>`;
-        envListHTML += Object.entries(item?.targetIpMap || {})
-          .map((targetIpItem) => {
-            return `${targetIpItem[0]}--->${targetIpItem[1]}`;
+        const isRunning = item.status === "running";
+        let envListHTML = `** --->${item.target}<br/>`;
+        envListHTML += Object.entries(item?.targetMap || {})
+          .map((targetItem) => {
+            return `${targetItem[0]}--->${targetItem[1]}`;
           })
           .join("<br/>");
-        return `          
-        <tr>
-          <td class="font-center">${item.name}</td>
-          <td class="font-center">${envListHTML}</td>
-          <td class="font-center">
-            <a href=${item.indexPage} target="_blank">${item.indexPage}</a>
-          </td>
-          <td class="font-center status-${item.status}">${item.status}</td>
-          <td class="font-center">
-            <button data-key="${item.key}" data-action="${
-          item.status === "running" ? "stop" : "start"
+        return `
+            <tr>
+              <td class="font-center">${item.name}</td>
+              <td class="font-center">${envListHTML}</td>
+              <td class="font-center">
+                ${
+                  isRunning
+                    ? `<a href=${item.indexPage} target="_blank">${item.indexPage}</a>`
+                    : `${item.indexPage}`
+                }
+              </td>
+              <td class="font-center status-${item.status}">${item.status}</td>
+              <td class="font-center">
+                <button data-key="${item.key}" data-action="${
+          isRunning ? "stop" : "start"
         }">
-              ${item.status === "running" ? "停止" : "启动"}
-            </button>
-          </td>
-        </tr>
-          `;
+                  ${isRunning ? "停止" : "启动"}
+                </button>
+              </td>
+            </tr>
+              `;
       });
       document.getElementById("tableContent").innerHTML = newHtml.join("");
     };
@@ -167,7 +174,7 @@
      * */
     function startServer(key) {
       fetch(
-        `/webpack-env-manage/api/server/start?${new URLSearchParams({
+        `${apiPrefix}/api/server/start?${new URLSearchParams({
           key,
         }).toString()}`
       )
@@ -186,7 +193,7 @@
      * */
     function stopServer(key) {
       fetch(
-        `/webpack-env-manage/api/server/stop?${new URLSearchParams({
+        `${apiPrefix}/api/server/stop?${new URLSearchParams({
           key,
         }).toString()}`
       )

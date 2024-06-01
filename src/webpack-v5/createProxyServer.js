@@ -12,7 +12,7 @@ const createProxyServer = (envItem, devServerOptions) => {
   const app = express();
 
   const newProxy = devServerOptions.proxy.map((item) => {
-    const target = envItem?.targetIpMap?.[item.target] ?? envItem.targetIp
+    const target = envItem?.targetMap?.[item.target] ?? envItem.target
     return {
       ...item,
       target,
