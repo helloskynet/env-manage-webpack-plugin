@@ -1,0 +1,28 @@
+{
+  "name": "env-manage-webpack-plugin",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "run-p devServer devWebpack",
+    "devServer": "node test/server.js",
+    "devWebpack": "webpack server --config ./examples/webpack.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^2.0.6"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.6.0",
+    "npm-run-all2": "^6.2.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  },
+  "peerDependencies": {
+    "webpack": "^5.0.0"
+  }
+}

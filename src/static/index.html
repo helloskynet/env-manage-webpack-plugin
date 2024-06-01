@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webpack env manage</title>
+    <link
+      rel="shortcut icon"
+      href="https://github.githubassets.com/favicons/favicon.svg"
+      type="image/x-icon"
+    />
+    <style>
+      @charset "utf-8";
+      /* CSS Document */
+      .tabtop13 {
+        margin-top: 13px;
+      }
+      .tabtop13 td {
+        background-color: #ffffff;
+        height: 25px;
+        line-height: 150%;
+      }
+      .font-center {
+        text-align: center;
+      }
+      .btbg {
+        background: #e9faff !important;
+      }
+      .btbg1 {
+        background: #f2fbfe !important;
+      }
+      .btbg2 {
+        background: #f3f3f3 !important;
+      }
+      .biaoti {
+        font-family: 微软雅黑;
+        font-size: 26px;
+        font-weight: bold;
+        border-bottom: 1px dashed #cccccc;
+        color: #255e95;
+        margin-bottom: 8px;
+      }
+      .titfont {
+        font-family: 微软雅黑;
+        font-size: 16px;
+        font-weight: bold;
+        color: #255e95;
+        background: url(../images/ico3.gif) no-repeat 15px center;
+        background-color: #e9faff;
+      }
+      .tabtxt2 {
+        font-family: 微软雅黑;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: right;
+        padding-right: 10px;
+        color: #327cd1;
+      }
+      .tabtxt3 {
+        font-family: 微软雅黑;
+        font-size: 14px;
+        padding-left: 15px;
+        color: #000;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        line-height: 20px;
+      }
+      .status-running {
+        background-color: greenyellow !important;
+      }
+      .status-watting {
+        background-color: gray !important;
+      }
+    </style>
+  </head>
+  <body>
+    <table
+      width="100%"
+      border="0"
+      cellspacing="1"
+      cellpadding="4"
+      bgcolor="#cccccc"
+      class="tabtop13"
+      align="center"
+    >
+      <caption align="center" class="biaoti" height="60">
+        环境列表
+      </caption>
+      <thead>
+        <tr>
+          <th class="btbg font-center titfont">环境名称</th>
+          <th class="btbg font-center titfont">环境地址</th>
+          <th class="btbg font-center titfont">首页地址</th>
+          <th class="btbg font-center titfont">状态</th>
+          <th class="btbg font-center titfont">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableContent"></tbody>
+    </table>
+  </body>
+  <script>
+    let localEnvList = [];
+    /**
+     * 获取环境列表
+     *
+     */
+    const getEnvList = () => {
+      fetch("/webpack-env-manage/api/getlist")
+        .then((res) => {
+          return res.json();
+        })
+        .then((envList) => {
+          localEnvList = envList;
+          updateEnvListHTML(envList);
+        });
+    };
+
+    /**
+     * 更新页面
+     * */
+    const updateEnvListHTML = (envList) => {
+      const newHtml = envList.map((item) => {
+        let envListHTML = `** --->${item.targetIp}<br/>`;
+        envListHTML += Object.entries(item?.targetIpMap || {})
+          .map((targetIpItem) => {
+            return `${targetIpItem[0]}--->${targetIpItem[1]}`;
+          })
+          .join("<br/>");
+        return `          
+        <tr>
+          <td class="font-center">${item.name}</td>
+          <td class="font-center">${envListHTML}</td>
+          <td class="font-center">
+            <a href=${item.indexPage} target="_blank">${item.indexPage}</a>
+          </td>
+          <td class="font-center status-${item.status}">${item.status}</td>
+          <td class="font-center">
+            <button data-key="${item.key}" data-action="${
+          item.status === "running" ? "stop" : "start"
+        }">
+              ${item.status === "running" ? "停止" : "启动"}
+            </button>
+          </td>
+        </tr>
+          `;
+      });
+      document.getElementById("tableContent").innerHTML = newHtml.join("");
+    };
+
+    /**
+     *  监听按钮点击事件，启动或者停止环境
+     * */
+    document
+      .getElementById("tableContent")
+      .addEventListener("click", (event) => {
+        const { action, key } = event.target.dataset;
+        if (action === "start") {
+          startServer(key);
+        } else if (action === "stop") {
+          stopServer(key);
+        }
+      });
+
+    /**
+     *
+     * 启动服务
+     * */
+    function startServer(key) {
+      fetch(
+        `/webpack-env-manage/api/server/start?${new URLSearchParams({
+          key,
+        }).toString()}`
+      )
+        .then((res) => {
+          return res.json();
+        })
+        .then((res) => {
+          if (res.code === "0") {
+            getEnvList();
+          }
+        });
+    }
+    /**
+     *
+     * 停止服务
+     * */
+    function stopServer(key) {
+      fetch(
+        `/webpack-env-manage/api/server/stop?${new URLSearchParams({
+          key,
+        }).toString()}`
+      )
+        .then((res) => {
+          return res.json();
+        })
+        .then((res) => {
+          if (res.code === "0") {
+            getEnvList();
+          }
+        });
+    }
+
+    getEnvList();
+  </script>
+</html>
