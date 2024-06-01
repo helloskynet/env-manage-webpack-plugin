@@ -84,7 +84,7 @@
       align="center"
     >
       <caption align="center" class="biaoti" height="60">
-        环境列表
+        环境列表（env-list）
       </caption>
       <thead>
         <tr>
@@ -101,7 +101,10 @@
   <script>
     let localEnvList = [];
 
-    const apiPrefix = location.href;
+    let apiPrefix = location.href;
+    if (apiPrefix.endsWith("/")) {
+      apiPrefix = apiPrefix.slice(0, -1);
+    }
     /**
      * 获取环境列表
      *
@@ -122,7 +125,12 @@
      * */
     const updateEnvListHTML = (envList) => {
       const newHtml = envList.map((item) => {
-        const isRunning = item.status === "running";
+        let status = item.status;
+        if (item.isWebpack) {
+          status = "running";
+        }
+        const isRunning = status === "running";
+
         let envListHTML = `** --->${item.target}<br/>`;
         envListHTML += Object.entries(item?.targetMap || {})
           .map((targetItem) => {
@@ -140,12 +148,12 @@
                     : `${item.indexPage}`
                 }
               </td>
-              <td class="font-center status-${item.status}">${item.status}</td>
+              <td class="font-center status-${status}">${status}</td>
               <td class="font-center">
-                <button data-key="${item.key}" data-action="${
+                <button data-key="${item.key || ""}" data-action="${
           isRunning ? "stop" : "start"
-        }">
-                  ${isRunning ? "停止" : "启动"}
+        }" ${item.key ? "" : "disabled"}>
+                  ${item.key ? (isRunning ? "停止" : "启动") : "webpack"}
                 </button>
               </td>
             </tr>
@@ -161,10 +169,12 @@
       .getElementById("tableContent")
       .addEventListener("click", (event) => {
         const { action, key } = event.target.dataset;
-        if (action === "start") {
-          startServer(key);
-        } else if (action === "stop") {
-          stopServer(key);
+        if (key) {
+          if (action === "start") {
+            startServer(key);
+          } else if (action === "stop") {
+            stopServer(key);
+          }
         }
       });
 

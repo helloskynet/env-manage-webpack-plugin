@@ -15,6 +15,19 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
     throw new Error("webpack-dev-server is not defined");
   }
 
+  const targetMap = {};
+  devServer.options.proxy.map((item) => {
+    targetMap[item.context.toString()] = item.target;
+  });
+  const devProxy = {
+    isWebpack: true,
+    name: "webpack-dev-server",
+    target: devServer.options.proxy[0].target,
+    localPort: devServer.options.port,
+    index: "",
+    targetMap,
+  };
+
   const { envConfigPath, basePath } = pluginConfig;
 
   // const getEnvList = require(envConfigPath);
@@ -25,6 +38,8 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
       item.key = `${item.target}-+-${item.localPort}`;
       return item;
     });
+
+  envList.unshift(devProxy);
 
   /**
    * 获取静态页面，环境列表页
