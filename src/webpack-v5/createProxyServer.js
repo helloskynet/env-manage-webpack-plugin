@@ -1,5 +1,6 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const getPorts = require("webpack-dev-server/lib/getPort");
 const getProxyMiddlewares = require("./proxy");
 
 /**
@@ -12,7 +13,7 @@ const createProxyServer = (envItem, devServerOptions) => {
   const app = express();
 
   const newProxy = devServerOptions.proxy.map((item) => {
-    const target = envItem?.targetMap?.[item.target] ?? envItem.target
+    const target = envItem?.targetMap?.[item.target] ?? envItem.target;
     return {
       ...item,
       target,
@@ -46,7 +47,17 @@ const createProxyServer = (envItem, devServerOptions) => {
 
   // 除了代理的请求，其他请求全部请求 devServer
   app.use("**", webpackProxy);
-  return app.listen(envItem.localPort);
+
+  let localPort = Number(envItem.localPort);
+
+  if (isNaN(localPort)) {
+    localPort = 3000;
+  }
+
+  return getPorts(localPort).then((port) => {
+    app.listen(port);
+    return port;
+  });
 };
 
 module.exports = createProxyServer;
