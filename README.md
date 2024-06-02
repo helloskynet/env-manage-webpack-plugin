@@ -115,7 +115,7 @@ module.exports = getEnvConfig;
 
 如果通过 `http://localhost:3001` 访问页面，所有请求将会被转发到 `http://localhost:3010`，提供 `targetMap`后，将会根据 `targetMap` 中的映射配置进行对应的转发。
 
-<img src='./doc/env-manage-webpack-plugin.svg'><>
+<img src='https://github.com/helloskynet/env-manage-webpack-plugin/blob/develop/doc/env-manage-webpack-plugin.png'/>
 
 [npm]: https://img.shields.io/npm/v/env-manage-webpack-plugin.svg
 [npm-url]: https://npmjs.com/package/env-manage-webpack-plugin
