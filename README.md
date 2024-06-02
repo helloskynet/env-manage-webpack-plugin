@@ -25,7 +25,7 @@
 **webpack.config.js**
 
 ```js
-const EnvManageWebpackPlugin = require("../src");
+const EnvManageWebpackPlugin = require("env-manage-webpack-plugin");
 const path = require("path");
 
 module.exports = {
