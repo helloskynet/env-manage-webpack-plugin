@@ -117,6 +117,10 @@ module.exports = getEnvConfig;
 
 <img src='doc/env-manage-webpack-plugin.png'/>
 
+![f]('doc/env-manage-webpack-plugin.png')
+
+![flow](https://github.com/helloskynet/env-manage-webpack-plugin/blob/develop/doc/env-manage-webpack-plugin.png)
+
 [npm]: https://img.shields.io/npm/v/env-manage-webpack-plugin.svg
 [npm-url]: https://npmjs.com/package/env-manage-webpack-plugin
 [node]: https://img.shields.io/node/v/env-manage-webpack-plugin.svg
