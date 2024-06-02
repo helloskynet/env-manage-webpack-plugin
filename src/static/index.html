@@ -68,7 +68,7 @@
       .status-running {
         background-color: greenyellow !important;
       }
-      .status-watting {
+      .status-standby {
         background-color: gray !important;
       }
     </style>
@@ -144,7 +144,7 @@
               <td class="font-center">
                 ${
                   isRunning
-                    ? `<a href=${item.indexPage} target="_blank">${item.indexPage}</a>`
+                    ? `<a href=${item.indexPage} target="_blank" title="启动时可能会根据端口使用情况，更新端口">${item.indexPage}</a>`
                     : `${item.indexPage}`
                 }
               </td>

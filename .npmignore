@@ -1,5 +1,7 @@
 .git
 .vscode
+.github
+
 examples
 test
 doc

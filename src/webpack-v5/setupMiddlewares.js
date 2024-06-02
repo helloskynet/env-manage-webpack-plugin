@@ -52,13 +52,14 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
    * 获取环境列表
    */
   devServer.app.get(basePath + "/api/getlist", (request, response) => {
-    const { protocol, host } = request;
-    const ipAdress = `${protocol}://${host}`;
+    const { protocol, hostname } = request;
+    const ipAdress = `${protocol}://${hostname}`;
     envList.forEach((item) => {
+      item.protocol = item.protocol || protocol;
       item.indexPage = `${ipAdress}:${item?.localPort ?? "[auto]"}${
         item?.index ?? ""
       }`;
-      item.status = serverMap.has(item.key) ? "running" : "waitting";
+      item.status = serverMap.has(item.key) ? "running" : "standby";
     });
     response.send(envList);
   });
@@ -76,11 +77,19 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
     } else {
       const envItem = envList.find((item) => item.key === key);
       const inst = createProxyServer(envItem, devServer.options);
+      inst
+        .then((port) => {
+          if (port != envItem.localPort) {
+            envItem.localPort = port;
+          }
+        })
+        .then(() => {
+          response.send({
+            code: "0",
+            message: "环境启动成功",
+          });
+        });
       serverMap.set(key, inst);
-      response.send({
-        code: "0",
-        message: "环境启动成功",
-      });
     }
   });
   /**
