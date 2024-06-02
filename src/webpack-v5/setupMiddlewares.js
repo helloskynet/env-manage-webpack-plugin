@@ -15,12 +15,32 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
     throw new Error("webpack-dev-server is not defined");
   }
 
+  const targetMap = {};
+  devServer.options.proxy.map((item) => {
+    targetMap[item.context.toString()] = item.target;
+  });
+  const devProxy = {
+    isWebpack: true,
+    name: "webpack-dev-server",
+    target: devServer.options.proxy[0].target,
+    localPort: devServer.options.port,
+    index: "",
+    targetMap,
+  };
+
   const { envConfigPath, basePath } = pluginConfig;
 
-  const getEnvList = require(envConfigPath);
+  // const getEnvList = require(envConfigPath);
 
-  const envList = getEnvList();
-  
+  const envList = require(envConfigPath)()
+    .filter((item) => item.target)
+    .map((item) => {
+      item.key = `${item.target}-+-${item.localPort}`;
+      return item;
+    });
+
+  envList.unshift(devProxy);
+
   /**
    * 获取静态页面，环境列表页
    */
@@ -32,10 +52,12 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
    * 获取环境列表
    */
   devServer.app.get(basePath + "/api/getlist", (request, response) => {
+    const { protocol, host } = request;
+    const ipAdress = `${protocol}://${host}`;
     envList.forEach((item) => {
-      item.key = `${item.targetIp}-+-${item.localPort}`;
-      item.indexPage =
-        item.indexPage || `http://${request.host}:${item.localPort}`;
+      item.indexPage = `${ipAdress}:${item?.localPort ?? "[auto]"}${
+        item?.index ?? ""
+      }`;
       item.status = serverMap.has(item.key) ? "running" : "waitting";
     });
     response.send(envList);
@@ -80,11 +102,6 @@ const setupMiddlewares = (middlewares, devServer, pluginConfig) => {
         message: "环境已经关闭",
       });
     }
-  });
-
-  middlewares.unshift((res, req, next) => {
-    console.log("webpack", res.header("referer"), res.header("header"));
-    next();
   });
 
   return middlewares;

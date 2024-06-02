@@ -8,7 +8,12 @@
     "devServer": "node test/server.js",
     "devWebpack": "webpack server --config ./examples/webpack.config.js"
   },
-  "keywords": [],
+  "keywords": [
+    "webpack",
+    "webpack-dev-server",
+    "development",
+    "environment"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -24,5 +29,11 @@
   },
   "peerDependencies": {
     "webpack": "^5.0.0"
+  },
+  "bugs": "https://github.com/helloskynet/env-manage-webpack-plugin/issues",
+  "homepage": "https://github.com/helloskynet/env-manage-webpack-plugin",
+  "repository": "https://github.com/helloskynet/env-manage-webpack-plugin.git",
+  "engines": {
+    "node": ">=18.18.0"
   }
 }
