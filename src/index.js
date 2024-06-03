@@ -1,3 +1,4 @@
+const createEnvManage = require("./inde/createEnvManage");
 const setupMiddlewares = require("./webpack-v5/setupMiddlewares");
 const path = require("path");
 const pluginName = "EnvManageWebpackPlugin";
@@ -6,6 +7,8 @@ class EnvManageWebpackPlugin {
   static defaultOptions = {
     envConfigPath: path.resolve(process.cwd(), "./env.config.js"),
     basePath: "/webpack-env-manage",
+    port: 3000,
+    in: true,
   };
 
   constructor(options) {
@@ -17,6 +20,10 @@ class EnvManageWebpackPlugin {
 
   apply(compiler) {
     compiler.hooks.afterPlugins.tap(pluginName, (compiler) => {
+      // if (this.in) {
+      //   createEnvManage(this.options);
+      //   return;
+      // }
       const originSetupMiddlewares =
         compiler.options?.devServer?.setupMiddlewares;
       if (originSetupMiddlewares) {
