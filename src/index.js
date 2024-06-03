@@ -6,6 +6,7 @@ class EnvManageWebpackPlugin {
   static defaultOptions = {
     envConfigPath: path.resolve(process.cwd(), "./env.config.js"),
     basePath: "/webpack-env-manage",
+    open: true,
   };
 
   constructor(options) {
@@ -19,6 +20,26 @@ class EnvManageWebpackPlugin {
     compiler.hooks.afterPlugins.tap(pluginName, (compiler) => {
       const originSetupMiddlewares =
         compiler.options?.devServer?.setupMiddlewares;
+
+      const getOpen = (open) => {
+        if (typeof devServerOpen === "array") {
+          return open.push(this.options.basePath);
+        }
+        return [this.options.basePath];
+      };
+
+      const devServerOpen = compiler.options?.devServer?.open;
+      if (this.options.open) {
+        if (typeof devServerOpen === "object") {
+          compiler.options.devServer.open.target = getOpen(
+            compiler.options.devServer.open.target
+          );
+        } else {
+          compiler.options.devServer.open = getOpen(
+            compiler.options.devServer.open
+          );
+        }
+      }
       if (originSetupMiddlewares) {
         compiler.options.setupMiddlewares = (...param) => {
           param[0] = originSetupMiddlewares(...param);
