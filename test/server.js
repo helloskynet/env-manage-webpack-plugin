@@ -4,24 +4,24 @@ const createServer = (port, second) => {
   const app = express();
   app.use((req, res, next) => {
     console.log(
-      "test server" + port,
-      req.header("referer"),
-      req.header("host")
+      "currentServer: " + req.header("host"),
+      "收到消息来自：",
+      req.header("referer")
     );
     next();
   });
 
   app.get("/simple", (req, res) => {
-    res.send({ message: "request: simple Hello World! from " + port });
+    res.send({ message: "this response from -- simple" + port });
   });
   if (second) {
     app.get("/two", (req, res) => {
-      res.send({ message: "request: two Hello World! form " + port });
+      res.send({ message: "this response from -- two " + port });
     });
   }
 
   app.get("/", (req, res) => {
-    res.send("Hello World!" + port);
+    res.send("Hello World! form" + port);
   });
 
   app.listen(port, () => {
@@ -32,4 +32,5 @@ const createServer = (port, second) => {
 createServer(3010);
 createServer(3011);
 createServer(3012);
+createServer(3013);
 createServer(3020, true);

@@ -1,19 +1,18 @@
-const createEnvManage = require("./inde/createEnvManage");
-const setupMiddlewares = require("./webpack-v5/setupMiddlewares");
+const setupMiddlewares = require("./webpack-w/setupMiddlewares");
 const path = require("path");
-const pluginName = "EnvManageWebpackPlugin";
+const pluginName = "EnvManagePlugin";
 
-class EnvManageWebpackPlugin {
+class EnvManagePlugin {
   static defaultOptions = {
     envConfigPath: path.resolve(process.cwd(), "./env.config.js"),
-    basePath: "/webpack-env-manage",
+    basePath: "/env-manage",
     port: 3000,
-    in: true,
+    defaultServer: "http://localhost:8080",
   };
 
   constructor(options) {
     this.options = {
-      ...EnvManageWebpackPlugin.defaultOptions,
+      ...EnvManagePlugin.defaultOptions,
       ...options,
     };
   }
@@ -24,23 +23,37 @@ class EnvManageWebpackPlugin {
       //   createEnvManage(this.options);
       //   return;
       // }
+      const devServerProxy = compiler.options.devServer.proxy;
       const originSetupMiddlewares =
         compiler.options?.devServer?.setupMiddlewares;
       if (originSetupMiddlewares) {
-        compiler.options.setupMiddlewares = (...param) => {
-          param[0] = originSetupMiddlewares(...param);
-          return setupMiddlewares(...param, this.options);
+        compiler.options.setupMiddlewares = (middlewares, devServer) => {
+          param[0] = originSetupMiddlewares(middlewares, devServer);
+          return setupMiddlewares(
+            middlewares,
+            devServer,
+            this.options,
+            devServerProxy
+          );
         };
       } else {
         if (!compiler.options.devServer) {
           compiler.options.devServer = {};
         }
-        compiler.options.devServer.setupMiddlewares = (...param) => {
-          return setupMiddlewares(...param, this.options);
+        compiler.options.devServer.setupMiddlewares = (
+          middlewares,
+          devServer
+        ) => {
+          return setupMiddlewares(
+            middlewares,
+            devServer,
+            this.options,
+            devServerProxy
+          );
         };
       }
     });
   }
 }
 
-module.exports = EnvManageWebpackPlugin;
+module.exports = EnvManagePlugin;

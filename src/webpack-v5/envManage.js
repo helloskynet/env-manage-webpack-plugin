@@ -8,7 +8,7 @@ const serverMap = new Map();
  * @param {*} devServerApp envMangeApp
  * @param {*} pluginConfig 插件配置
  */
-const registerEnvManageRouter = (devServerApp, pluginConfig, static) => {
+const registerEnvManageRouter = (devServerApp, pluginConfig, proxyList) => {
   const { envConfigPath, basePath } = pluginConfig;
 
   const envConfig = require(envConfigPath)();
@@ -16,9 +16,9 @@ const registerEnvManageRouter = (devServerApp, pluginConfig, static) => {
   const { envList, proxy } = envConfig;
   envList
     .filter((item) => item.target)
-    .map((item) => {
+    .map((item, index) => {
       item.proxy = item.proxy || proxy;
-      item.key = `${item.target}-+-${item.localPort}`;
+      item.key = `${index}`;
       return item;
     });
 
@@ -57,12 +57,23 @@ const registerEnvManageRouter = (devServerApp, pluginConfig, static) => {
       });
     } else {
       const envItem = envList.find((item) => item.key === key);
-      const inst = createProxyServer(envItem, pluginConfig, static);
+      const inst = createProxyServer(
+        devServerApp,
+        envItem,
+        pluginConfig,
+        proxyList
+      );
       inst
-        .then((port) => {
-          if (port != envItem.localPort) {
-            envItem.localPort = port;
+        .then((appServer) => {
+          if (appServer.port != envItem.localPort) {
+            envItem.localPort = appServer.port;
           }
+          const m = {};
+          proxyList.forEach((e) => {
+            m[`http://localhost:${appServer.port}`] = `${envItem.target}`;
+          });
+          appServer.proxyMap = m;
+          serverMap.set(key, appServer);
         })
         .then(() => {
           response.send({
@@ -70,7 +81,6 @@ const registerEnvManageRouter = (devServerApp, pluginConfig, static) => {
             message: "环境启动成功",
           });
         });
-      serverMap.set(key, inst);
     }
   });
   /**
@@ -96,5 +106,7 @@ const registerEnvManageRouter = (devServerApp, pluginConfig, static) => {
 
   return devServerApp;
 };
+
+exports.serverMap = serverMap;
 
 module.exports = registerEnvManageRouter;
