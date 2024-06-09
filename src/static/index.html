@@ -131,12 +131,20 @@
         }
         const isRunning = status === "running";
 
-        let envListHTML = `** --->${item.target}<br/>`;
-        envListHTML += Object.entries(item?.targetMap || {})
-          .map((targetItem) => {
-            return `${targetItem[0]}--->${targetItem[1]}`;
-          })
-          .join("<br/>");
+        let envListHTML = ``;
+        if (typeof item.target === "string") {
+          envListHTML = `** --->${item.target}<br/>`;
+        } else {
+          envListHTML = `** --->${item.fallbackTarget}<br/>`;
+        }
+
+        if (typeof item.target === "object") {
+          envListHTML += Object.entries(item?.target || {})
+            .map((targetItem) => {
+              return `${targetItem[0]}--->${targetItem[1]}`;
+            })
+            .join("<br/>");
+        }
         return `
             <tr>
               <td class="font-center">${item.name}</td>

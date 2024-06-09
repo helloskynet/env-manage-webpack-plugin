@@ -57,45 +57,104 @@ module.exports = {
 env-manage-webpack-plugin 共有两个配置项
 
 - `envConfigPath`： 用于指定配置文件的位置，默认使用项目目录下的 `env.config.js`；
-- `basePath`： `env-manage-webpack-plugin` 服务前缀，默认 `/webpack-env-manage`,如果和`env-manage-webpack-plugin` 的服务路径出现冲突，可通过此配置调整。
+- `basePath`： `env-manage-webpack-plugin` 服务前缀，默认 `/webpack-env-manage`,如果和`env-manage-webpack-plugin` 的服务路径出现冲突，可通过此配置调整；
+- `fallbackTarget` 对于代理服务器来说，所有未配置的转发的请求，都会回退到这个服务器上，一般无需提供，默认即为 `webpack-dev-server` 启动的地址;
 
 ### env.config.js
 
 ```js
 const getEnvConfig = () => {
-  return [
-    {
-      name: "1号测试环境",
-      target: "http://localhost:3010",
-      localPort: "3001",
-      index: "",
-      targetMap: {
-        "http://localhost:3099": "http://localhost:3020",
+  return {
+    envList: [
+      {
+        name: "1号测试环境",
+        localPort: "3001",
+        fallbackTarget: "",
+        target: {
+          "http://localhost:3010": "http://localhost:3011",
+          "http://localhost:3099": "http://localhost:3020",
+        },
       },
-    },
-    {
-      name: "222号测试环境",
-      target: "http://localhost:3011",
-      localPort: "3002",
-    },
-    {
-      name: "333号测试环境",
-      target: "http://localhost:3012",
-      localPort: "3003",
-    },
-  ];
+      {
+        name: "222号测试环境",
+        target: "http://localhost:3012",
+        localPort: "3002",
+      },
+      {
+        name: "333号测试环境",
+        target: "http://localhost:3013",
+        localPort: "3003",
+      },
+    ],
+  };
+};
+
+module.exports = getEnvConfig;
+
+```
+
+#### name String
+
+环境名称用于展示
+
+#### target Object|String
+
+环境地址
+
+- 类型为 `String` webpack 配置中的 `devServer.proxy` 中配置的所有代理都将会被转发到该地址；
+
+- 类型为 `Object` 将根据配置进行转发
+
+用于环境中多个 IP 情况。
+
+例如，两个接口 `/simple` 和 `/two` 分别请求不同的 `http://localhost:3010` 和 `http://localhost:3099`，
+
+```js
+// webpack.config
+......
+    proxy: [
+      {
+        context: ["/simple"],
+        target: "http://localhost:3010",
+        changeOrigin: true,
+      },
+      {
+        context: ["/two"],
+        target: "http://localhost:3099",
+        changeOrigin: true,
+      },
+    ],
+......
+
+```
+
+第二个环境的，两个接口 `/simple` 和 `/two` 分别请求不同的 `http://localhost:3011` 和 `http://localhost:3020`，`env.config.js` 配置如下：
+
+```js
+// env.config.js
+const getEnvConfig = () => {
+  return {
+    envList: [
+      {
+        name: "1号测试环境",
+        localPort: "3001",
+        target: {
+          "http://localhost:3010": "http://localhost:3011",
+          "http://localhost:3099": "http://localhost:3020",
+        },
+      },
+    ],
+  };
 };
 
 module.exports = getEnvConfig;
 ```
 
-#### name
+> `webpack.config.js` 中的 `devServer.proxy` 中的 `target` 的属性即为 `envList[].target` 对象的 `key`
 
-环境名称用于展示
+#### router
 
-#### target
-
-环境地址，未提供时，将会忽略此条环境配置。
+路由配置，将会直接替换所有的 `proxy` 中的router配置
 
 #### localPort
 
@@ -105,21 +164,7 @@ module.exports = getEnvConfig;
 
 首页地址 `{protocol}://{host}:{localPort}{index}`;
 
-#### targetMap
-
-环境中的其它服务映射,用于环境中多个 IP 情况。
-
-例如，两个接口 `/simple` 和 `/two` 分别请求不同的 `http://localhost:3010` 和 `http://localhost:3099`，未提供 `targetMap` 时：
-
-如果访问 webpack 启动的代理，将会正常转发到对应的服务器；
-
-如果通过 `http://localhost:3001` 访问页面，所有请求将会被转发到 `http://localhost:3010`，提供 `targetMap`后，将会根据 `targetMap` 中的映射配置进行对应的转发。
-
 <img src='doc/env-manage-webpack-plugin.png'/>
-
-![f]('doc/env-manage-webpack-plugin.png')
-
-![flow](https://github.com/helloskynet/env-manage-webpack-plugin/blob/develop/doc/env-manage-webpack-plugin.png)
 
 [npm]: https://img.shields.io/npm/v/env-manage-webpack-plugin.svg
 [npm-url]: https://npmjs.com/package/env-manage-webpack-plugin
