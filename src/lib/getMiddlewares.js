@@ -1,4 +1,6 @@
-const getProxyMiddlewares = (proxy) => {
+const getMiddlewares = (proxy) => {
+  const webSocketProxies = [];
+  const middlewares = [];
   if (proxy) {
     const { createProxyMiddleware } = require("http-proxy-middleware");
 
@@ -26,8 +28,12 @@ const getProxyMiddlewares = (proxy) => {
       // if (!proxyConfig.bypass) {
       //   util.deprecate(
       //     () => {},
-      //     `Invalid proxy configuration:\n\n${JSON.stringify(proxyConfig, null, 2)}\n\nThe use of proxy object notation as proxy routes has been removed.\nPlease use the 'router' or 'context' options. Read more at https://github.com/chimurai/http-proxy-middleware/tree/v2.0.6#http-proxy-middleware-options`,
-      //     "DEP_WEBPACK_DEV_SERVER_PROXY_ROUTES_ARGUMENT",
+      //     `Invalid proxy configuration:\n\n${JSON.stringify(
+      //       proxyConfig,
+      //       null,
+      //       2
+      //     )}\n\nThe use of proxy object notation as proxy routes has been removed.\nPlease use the 'router' or 'context' options. Read more at https://github.com/chimurai/http-proxy-middleware/tree/v2.0.6#http-proxy-middleware-options`,
+      //     "DEP_WEBPACK_DEV_SERVER_PROXY_ROUTES_ARGUMENT"
       //   )();
       // }
     };
@@ -48,8 +54,6 @@ const getProxyMiddlewares = (proxy) => {
      *   }
      * ]
      */
-    const webSocketProxies = [];
-    const httpProxies = [];
     proxy.forEach((proxyConfigOrCallback) => {
       /**
        * @type {RequestHandler}
@@ -132,40 +136,29 @@ const getProxyMiddlewares = (proxy) => {
         }
       };
 
-      httpProxies.push(handler);
-      httpProxies.push((error, res, req, next) => handler(req, res, next));
-
-      // middlewares.push({
-      //   name: "http-proxy-middleware",
-      //   middleware: handler,
-      // });
-      // // Also forward error requests to the proxy so it can handle them.
-      // middlewares.push({
-      //   name: "http-proxy-middleware-error-handler",
-      //   middleware:
-      //     /**
-      //      * @param {Error} error
-      //      * @param {Request} req
-      //      * @param {Response} res
-      //      * @param {NextFunction} next
-      //      * @returns {any}
-      //      */
-      //     (error, req, res, next) => handler(req, res, next),
-      // });
+      middlewares.push({
+        name: "http-proxy-middleware",
+        middleware: handler,
+      });
+      // Also forward error requests to the proxy so it can handle them.
+      middlewares.push({
+        name: "http-proxy-middleware-error-handler",
+        middleware:
+          /**
+           * @param {Error} error
+           * @param {Request} req
+           * @param {Response} res
+           * @param {NextFunction} next
+           * @returns {any}
+           */
+          (error, req, res, next) => handler(req, res, next),
+      });
     });
-
-    return {
-      httpProxies,
-      webSocketProxies,
-    };
-
-    // middlewares.push({
-    //   name: "webpack-dev-middleware",
-    //   middleware:
-    //     /** @type {import("webpack-dev-middleware").Middleware<Request, Response>}*/
-    //     (this.middleware),
-    // });
   }
+  return {
+    middlewares,
+    webSocketProxies,
+  };
 };
 
-module.exports = getProxyMiddlewares;
+module.exports = getMiddlewares;
