@@ -2,11 +2,11 @@ const getEnvConfig = () => {
   return {
     // http-proxy-middleware
     // https://github.com/chimurai/http-proxy-middleware/tree/v2.0.4#readme
+    fallbackTarget: "http://localhost:8080",
     envList: [
       {
         name: "1号测试环境",
         localPort: "3001",
-        fallbackTarget: "",
         target: {
           "http://localhost:3010": "http://localhost:3011",
           "http://localhost:3099": "http://localhost:3020",
