@@ -192,8 +192,23 @@ class EnvManagePlugin {
   }
 
   apply(compiler) {
-    this.interConfig.logger = compiler.getInfrastructureLogger("webpack-env-manage");
+    this.interConfig.logger =
+      compiler.getInfrastructureLogger("webpack-env-manage");
     compiler.hooks.afterPlugins.tap(pluginName, (compiler) => {
+      try {
+        const webpackDevServer = require("webpack-dev-server1");
+      } catch {
+        this.fallbackTarget =
+          this.options.fallbackTarget || `http://localhost:8080`;
+        this.init({
+          options: {
+            proxy: this.options.proxy || [],
+          },
+        });
+        this.app.listen(this.options.port);
+        this.interConfig.logger.info(`http://localhost:${this.options.port}${this.options.basePath}`)
+        return;
+      }
       let originSetupMiddlewares = (middlewares) => middlewares;
       originSetupMiddlewares =
         compiler.options?.devServer?.setupMiddlewares ?? originSetupMiddlewares;

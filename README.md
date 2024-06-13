@@ -59,6 +59,8 @@ env-manage-webpack-plugin 共有两个配置项
 - `envConfigPath`： 用于指定配置文件的位置，默认使用项目目录下的 `env.config.js`；
 - `basePath`： `env-manage-webpack-plugin` 服务前缀，默认 `/webpack-env-manage`,如果和`env-manage-webpack-plugin` 的服务路径出现冲突，可通过此配置调整；
 - `fallbackTarget` 对于代理服务器来说，所有未配置的转发的请求，都会回退到这个服务器上，一般无需提供，默认即为 `webpack-dev-server` 启动的地址;
+- `proxy` 未使用  `webpack-dev-server` 时，使用此选项设置转发配置
+
 
 ### env.config.js
 
